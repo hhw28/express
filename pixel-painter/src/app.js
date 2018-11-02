@@ -10,8 +10,8 @@ const app = express()
 const server = http.createServer(app)
 const wss = new ws.Server({server})
 
-const width = 50
-const height = 30
+const width = 500
+const height = 300
 let pixelData
 try {
   pixelData = require('./pixel.json')
@@ -43,14 +43,14 @@ wss.on('connection', (ws, req) => {
         return
       }
 
-      if( x > 0 && y > 0 && x < width && y < height ){
+      if( x >= 0 && y >= 0 && x < width && y < height ){
         lastDraw = now
         pixelData[y][x] = color
         wss.clients.forEach(client => {
           client.send(
             JSON.stringify({
               type:'updateDot',
-              x,y,color,
+              x, y, color,
             })
           )
         })
