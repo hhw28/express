@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Pixel Painter</p></title>
   <style>
-    .canvas{
+    .canvas-box{
       border: 1px solid;
       width: max-content;
     }
@@ -25,7 +25,7 @@
 </head>
 <body>
   <div id="app">
-    <div class="canvas">
+    <div class="canvas-box">
       <canvas @click="handleCanvasClick" ref="canvas" :width="width" :height="height"></canvas>
     </div>
     <button @click="isPickingColor = true">{{isPickingColor ? '正在取色' : '取色'}}</button>
@@ -110,8 +110,8 @@
           value: '#795548'
         }, ],
         color:'red',
-        width: 256,
-        height: 256,
+        width: 500,
+        height: 300,
         isPickingColor: false
       }
     },

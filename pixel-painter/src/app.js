@@ -11,6 +11,9 @@ const app = express()
 const server = http.createServer(app)
 const wss = new ws.Server({server})
 
+const width = 500
+const height = 300
+
 main()
 
 async function main() {
@@ -20,7 +23,7 @@ async function main() {
   try {
     img = await Jimp.read(path.join(__dirname, './pixel.png'))
   } catch (e){
-    img = new Jimp(500, 300, 0xffffffff)
+    img = new Jimp(width, height, 0xffffffff)
   }
 
   //每隔三秒保存网页图片
