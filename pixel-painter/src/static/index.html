@@ -15,11 +15,12 @@
 <body>
   <div id="app">
     <div class="canvas">
-      <canvas @click="drawDot" ref="canvas" :width="width" :height="height"></canvas>
+      <canvas @click="handleCanvasClick" ref="canvas" :width="width" :height="height"></canvas>
     </div>
+    <button @click="isPickingColor = true">{{isPickingColor ? '正在取色' : '取色'}}</button>
     <input type="color" v-model="color">
-    <label :style="{background:c}" v-for="c in commonColors">
-      <input type="radio" :value="c" v-model="color">{{c}}
+    <label :style="{background:c.name}" v-for="c in commonColors">
+      <input type="radio" :value="c.value" v-model="color">{{c.name}}
     </label>
   </div>
 </body>
@@ -30,13 +31,46 @@
     data(){
       return {
         pixelData: [],
-        commonColors: ['red','orange','black','green'],
+        commonColors: [{
+          name: 'red',
+          value: '#ff0000'
+        },{
+          name: 'black',
+          value: '#000000'
+        },{
+          name: 'green',
+          value: '#008000'
+        },{
+          name: 'yellow',
+          value: '#ffff00'
+        }],
         color:'red',
         width: 0,
         height: 0,
+        isPickingColor: false
       }
     },
     methods:{
+      handleCanvasClick(e){
+        if(this.isPickingColor){
+          this.pickColor(e)
+        }else{
+          this.drawDot(e)
+        }
+      },
+      rgba2hex(dot){
+        dot = Array.from(dot)
+        dot = dot.map(it => it.toString(16).padStart(2, '0'))
+        return '#' + dot[0] + dot[1] + dot[2]
+      },
+      pickColor(e){
+        var x = e.layerX
+        var y = e.layerY
+        var p = this.ctx.getImageData(x, y, 1, 1).data
+        var hexColor = this.rgba2hex(p)
+        this.color = hexColor
+        this.isPickingColor = false
+      },
       drawDot(e){
         this.ws.send(
           JSON.stringify({
@@ -54,6 +88,7 @@
 
       var canvas = this.$refs.canvas
       var ctx = canvas.getContext('2d')
+      this.ctx = ctx
 
       ws.onmessage = ({data}) => {
         data = JSON.parse(data)
