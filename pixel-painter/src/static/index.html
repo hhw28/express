@@ -10,6 +10,17 @@
       border: 1px solid;
       width: max-content;
     }
+    .palette-btn{
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 2px;
+    }
+    input[type="radio"]{
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -19,9 +30,11 @@
     </div>
     <button @click="isPickingColor = true">{{isPickingColor ? '正在取色' : '取色'}}</button>
     <input type="color" v-model="color">
-    <label :style="{background:c.name}" v-for="c in commonColors">
-      <input type="radio" :value="c.value" v-model="color">{{c.name}}
-    </label>
+    <div class="palette">
+      <label class="palette-btn" :style="{background:c.value}" v-for="c in commonColors">
+        <input type="radio" :value="c.value" v-model="color">
+      </label>
+    </div>
   </div>
 </body>
 <script src="vue-2.5.17.js"></script>
@@ -32,18 +45,70 @@
       return {
         pixelData: [],
         commonColors: [{
-          name: 'red',
-          value: '#ff0000'
-        },{
-          name: 'black',
           value: '#000000'
-        },{
-          name: 'green',
-          value: '#008000'
-        },{
-          name: 'yellow',
-          value: '#ffff00'
-        }],
+        }, {
+          value: '#ffffff'
+        }, {
+          value: '#aaaaaa'
+        }, {
+          value: '#555555'
+        }, {
+          value: '#fed3c7'
+        }, {
+          value: '#ffc4ce'
+        }, {
+          value: '#faac8e'
+        }, {
+          value: '#ff8b83'
+        }, {
+          value: '#f44336'
+        }, {
+          value: '#e91e63'
+        }, {
+          value: '#e2669e'
+        }, {
+          value: '#9c27b0'
+        }, {
+          value: '#673ab7'
+        }, {
+          value: '#3f51b5'
+        }, {
+          value: '#004670'
+        }, {
+          value: '#057197'
+        }, {
+          value: '#2196f3'
+        }, {
+          value: '#00bcd4'
+        }, {
+          value: '#3be5db'
+        }, {
+          value: '#97fddc'
+        }, {
+          value: '#167300'
+        }, {
+          value: '#37a93c'
+        }, {
+          value: '#89e642'
+        }, {
+          value: '#d7ff07'
+        }, {
+          value: '#fff6d1'
+        }, {
+          value: '#f8cbbc'
+        }, {
+          value: '#ffeb3b'
+        }, {
+          value: '#ffc107'
+        }, {
+          value: '#ff9800'
+        }, {
+          value: '#ff5722'
+        }, {
+          value: '#B83f27'
+        }, {
+          value: '#795548'
+        }, ],
         color:'red',
         width: 0,
         height: 0,
@@ -87,6 +152,8 @@
       this.ws = ws
 
       var canvas = this.$refs.canvas
+      canvas.style.imageRendering = 'pixelated'  //解决图像点放大后模糊的情况
+
       var ctx = canvas.getContext('2d')
       this.ctx = ctx
 
