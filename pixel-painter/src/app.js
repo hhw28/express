@@ -26,16 +26,16 @@ async function main() {
     img = new Jimp(width, height, 0xffffffff)
   }
 
-  //每隔三秒保存网页图片
+  //每隔五秒检查，当图像有更新时才保存，若五秒内图像未更新则不保存
   var lastUpdate = 0
   setInterval(() => {
     var now = Date.now()
-    if(now - lastUpdate > 3000){
+    if(now - lastUpdate < 5000){
       img.write(path.join(__dirname, './pixel.png'), () => {
-        console.log('data saved!')
+        console.log('data saved!', now)
       })
     }
-  }, 3000)
+  }, 5000)
 
   // 当服务端和客户端连接成功
   wss.on('connection', (ws, req) => {
@@ -79,6 +79,7 @@ async function main() {
   })
 
   app.use(express.static(path.join(__dirname, './static')))
+
   server.listen(port, () => {
     console.log('server listening on port', port)
   })
