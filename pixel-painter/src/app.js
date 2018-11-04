@@ -27,10 +27,14 @@ async function main() {
   }
 
   //每隔三秒保存网页图片
+  var lastUpdate = 0
   setInterval(() => {
-    img.write(path.join(__dirname, './pixel.png'), () => {
-      console.log('data saved!')
-    })
+    var now = Date.now()
+    if(now - lastUpdate > 3000){
+      img.write(path.join(__dirname, './pixel.png'), () => {
+        console.log('data saved!')
+      })
+    }
   }, 3000)
 
   // 当服务端和客户端连接成功
@@ -57,6 +61,7 @@ async function main() {
         }
         if( x >= 0 && y >= 0 && x < width && y < height ){
           lastDraw = now
+          lastUpdate = now
           // 在图片上画上用户传来的像素点
           img.setPixelColor(Jimp.cssColorToHex(color), x, y)
           // 将改动广播给所有用户
