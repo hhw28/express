@@ -137,11 +137,19 @@
       },
       // 画像素点
       drawDot(e){
+        var clientX = e.clientX
+        var clientY = e.clientY
+        var rect = this.$refs.canvas.getBoundingClientRect()
+        console.log('drawDot', clientX, clientY, rect.top, rect.left)
+        var x = parseInt((clientX - rect.left) / this.factor)
+        var y = parseInt((clientY - rect.top) / this.factor)
+        console.log(x,y)
+
         this.ws.send(
           JSON.stringify({
             type: 'drawDot',
-            x: e.offsetX,
-            y: e.offsetY,
+            x: x, //e.offsetX
+            y: y, //e.offsetY
             color: this.color,
           })
         )
