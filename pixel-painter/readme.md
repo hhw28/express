@@ -1,8 +1,20 @@
 # Piexel Painter
 
-* canvas
-* websocket
-* express
-* Buffer
-* socket.io
-* test
+# 功能列表
+
+* 使用canvas绘制，以节省内存提升性能
+* 使用websocket进行实时传输
+* 使用express构建http服务器
+* 使用ws模块构建websocket后端并且与express集成
+* 后端使用buffer保存图片实时数据
+* 后端自动保存图片状态，服务器重启也不会丢失
+* 首次打开页面时，后端将图片转为png编码传给前端，以节省浏览，加快打开速度
+* 取色功能
+* 取色实时提示
+* 缩放
+* 移动
+
+# TODO
+
+* 后端累计更新，比如每300ms更新一次此段时间的所有像素点变化
+
