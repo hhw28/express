@@ -26,7 +26,7 @@
 <body>
   <div id="app">
     <div class="canvas-box">
-      <canvas @click="handleCanvasClick" ref="canvas" :width="width" :height="height"></canvas>
+      <canvas @mousedown="prepareDrag" @mousewheel="initZoom" @click="handleCanvasClick" ref="canvas" :width="width" :height="height"></canvas>
     </div>
     <button @click="startPickingColor">{{isPickingColor ? '正在取色' : '取色'}}</button>
     <input type="color" v-model="color">
@@ -50,10 +50,20 @@
         color:'red',
         width: 500,
         height: 300,
-        isPickingColor: false
+        isPickingColor: false,
+        factor: 1
       }
     },
     methods:{
+      // 点击事件
+      handleCanvasClick(e){
+        if(this.isPickingColor){
+          this.pickColor(e)
+        }else{
+          this.drawDot(e)
+        }
+      },
+      // pickColor 取色
       makeCursorImgUrl(color) {
         var cursor = document.createElement('canvas')
         var ctx = cursor.getContext('2d')
@@ -83,13 +93,6 @@
         // document.getElementById('canvas').style.cursor = 'url(' + cursor.toDataURL() + ') 6 6, crosshair'
         return cursor.toDataURL()
       },
-      handleCanvasClick(e){
-        if(this.isPickingColor){
-          this.pickColor(e)
-        }else{
-          this.drawDot(e)
-        }
-      },
       updateCursor(e){
         var color = this.getCurrHoverColor(e)
         var cursorUrl = this.makeCursorImgUrl(color)
@@ -118,6 +121,7 @@
         this.$refs.canvas.removeEventListener('mousemove', this.updateCursor)
         this.$refs.canvas.style.cursor = ``
       },
+      // 画像素点
       drawDot(e){
         this.ws.send(
           JSON.stringify({
@@ -128,8 +132,37 @@
           })
         )
       },
+      // 拖拽事件
+      prepareDrag(e){
+        console.log(e)
+      },
+      /*
+      滚动放大缩小事件
+      Scroll事件需要滚动条
+      DOMMouseScroll事件有大小写无法直接挂在html上(google浏览器不支持)
+      此处使用mousewheel可以直接挂在html中
+      */
+      initZoom(e){
+        e.preventDefault()
+        if(e.deltaY < 0){
+          this.factor = this.factor * 1.25
+          console.log(e)
+        }else{
+          this.factor = this.factor * 0.8
+        }
+        if(this.factor < 1){
+          this.factor = 1
+        }
+        if(this.factor > 10){
+          this.factor = this.factor * 0.8
+        }
+        this.$refs.canvas.style.transform = `scale(${this.factor})`
+      }
+
     },
     mounted(){
+      // this.initZoom(e)
+
       var ws = new WebSocket('ws://localhost:9095/pixel')
       this.ws = ws
 
