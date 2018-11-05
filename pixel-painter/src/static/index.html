@@ -6,9 +6,23 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Pixel Painter</title>
   <style>
-    .canvas-box{
+    body{
+      margin: 0;
+      padding: 0;
+    }
+    #app{
+      padding-top: 10px;
+      padding-left: 10px;
+    }
+    .canvas-wrapper{
       border: 1px solid;
-      width: max-content;
+      width: 500px;
+      height: 300px;
+      position: relative;
+      overflow: hidden;
+    }
+    .canvas-wrapper canvas{
+      position:absolute;
     }
     .palette-btn{
       display: inline-block;
@@ -25,8 +39,8 @@
 </head>
 <body>
   <div id="app">
-    <div class="canvas-box">
-      <canvas @mousedown="prepareDrag" @mousewheel="initZoom" @click="handleCanvasClick" ref="canvas" :width="width" :height="height"></canvas>
+    <div class="canvas-wrapper" @mousewheel="initZoom" >
+      <canvas @mousedown="prepareDrag" ref="canvas" :width="width" :height="height" style="top:0px;left:0px"></canvas>
     </div>
     <button @click="startPickingColor">{{isPickingColor ? '正在取色' : '取色'}}</button>
     <input type="color" v-model="color">
@@ -134,7 +148,38 @@
       },
       // 拖拽事件
       prepareDrag(e){
-        console.log(e)
+        var canvas = this.$refs.canvas
+        var startX = e.clientX
+        var startY = e.clientY
+        var posX = parseInt(canvas.style.left)
+        var posY = parseInt(canvas.style.top)
+        var moveHandler
+        var upHandler
+        var moved = false
+
+        canvas.addEventListener('mousemove', moveHandler = e => {
+          var currX = e.clientX
+          var currY = e.clientY
+          var diffX = currX - startX
+          var diffY = currY - startY
+          canvas.style.left = posX + diffX + 'px'
+          canvas.style.top = posY + diffY + 'px'
+        })
+        canvas.addEventListener('mouseup', e => {
+          var currX = e.clientX
+          var currY = e.clientY
+          var diffX = currX - startX
+          var diffY = currY - startY
+          // 当move一定距离之后，才判断其moved，为拖拽画面不触发画点事件
+          if(Math.sqrt(diffX ** 2 + diffY**2) > 3){
+            moved = true
+          }
+          canvas.removeEventListener('mousemove', moveHandler)
+          canvas.removeEventListener('mouseup', upHandler)
+          if(!moved){
+            this.handleCanvasClick(e)
+          }
+        })
       },
       /*
       滚动放大缩小事件
@@ -144,9 +189,9 @@
       */
       initZoom(e){
         e.preventDefault()
+        var canvas = this.$refs.canvas
         if(e.deltaY < 0){
           this.factor = this.factor * 1.25
-          console.log(e)
         }else{
           this.factor = this.factor * 0.8
         }
@@ -156,7 +201,11 @@
         if(this.factor > 10){
           this.factor = this.factor * 0.8
         }
-        this.$refs.canvas.style.transform = `scale(${this.factor})`
+        if(this.factor == 1){
+          canvas.style.left = '0px'
+          canvas.style.top = '0px'
+        }
+        canvas.style.transform = `scale(${this.factor})`
       }
 
     },
