@@ -47,6 +47,23 @@ async function main() {
       }
     })
 
+    //在线人数
+    wss.clients.forEach(client => {
+      client.send(JSON.stringify({
+        type:'onlineCount',
+        count: wss.clients.size,
+      }))
+    })
+    ws.on('close', () => {
+      wss.clients.forEach(client => {
+        client.send(JSON.stringify({
+          type:'onlineCount',
+          count: wss.clients.size,
+        }))
+      })
+    })
+
+
     // 当收到客户端消息时
     var lastDraw = 0
     ws.on('message', msg => {
