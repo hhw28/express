@@ -38,6 +38,8 @@ async function main() {
     }
   }, 5000)
 
+  global.io = io
+
   // 当服务端和客户端连接成功
   io.on('connection', (ws, req) => {
     img.getBuffer(Jimp.MIME_PNG, (err, buf) => {
@@ -73,15 +75,18 @@ async function main() {
         lastUpdate = now
         // 在图片上画上用户传来的像素点
         img.setPixelColor(Jimp.cssColorToHex(color), x, y)
-        // 将改动广播给所有用户
-        io.emit('updateDot', {
-          x, y, color
-        })
+        // 将改动广播给所有用户（此处为先存储，之后批量发送）
+        userOperations.push({x, y, color})
       }
-
     })
-
   })
+
+  // 把所有用户画的点先存储在数组中，每隔300毫秒批量发送，以缓解服务器压力
+  let userOperations = []
+  setInterval(() => {
+    io.emit('updateDot', userOperations)
+    userOperations = []
+  }, 500)
 
   app.use(express.static(path.join(__dirname, './static')))
 

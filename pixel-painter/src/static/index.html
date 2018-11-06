@@ -143,15 +143,16 @@
         var clientX = e.clientX
         var clientY = e.clientY
         var rect = this.$refs.canvas.getBoundingClientRect()
-        // console.log('drawDot', clientX, clientY, rect.top, rect.left)
         var x = parseInt((clientX - rect.left) / this.factor)
         var y = parseInt((clientY - rect.top) / this.factor)
-        console.log(x,y)
 
         this.ws.emit('drawDot', {
           x, y,
           color: this.color,
         })
+        // 由于服务器广播所有像素点有300毫秒延迟，所以此处当用户点击后直接把点先画上
+        this.ctx.fillStyle = this.color
+        this.ctx.fillRect(x, y, 1, 1)
       },
       // 拖拽事件
       prepareDrag(e){
@@ -242,9 +243,11 @@
       ws.on('onlineCount', data => {
         this.onlineCount = data.count
       })
-      ws.on('updateDot', data => {
-        ctx.fillStyle = data.color
-        ctx.fillRect(data.x, data.y, 1, 1)
+      ws.on('updateDot', operationList => {
+        operationList.forEach(data => {
+          ctx.fillStyle = data.color
+          ctx.fillRect(data.x, data.y, 1, 1)
+        })
       })
     }
   })
