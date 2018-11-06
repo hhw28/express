@@ -180,7 +180,7 @@
           var currY = e.clientY
           var diffX = currX - startX
           var diffY = currY - startY
-          // 当move一定距离之后，才判断其moved，为拖拽画面不触发画点事件
+          // 当鼠标抬起的时候判断画布是否移动超过了一定的距离，若超过一定距离则判断其为moved状态，为拖拽行为不触发画点事件
           if(Math.sqrt(diffX ** 2 + diffY**2) > 3){
             moved = true
           }
