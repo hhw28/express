@@ -81,11 +81,13 @@ async function main() {
     })
   })
 
-  // 把所有用户画的点先存储在数组中，每隔300毫秒批量发送，以缓解服务器压力
+  // 把所有用户画的点先存储在数组中，每隔300毫秒检查，当有数据时批量发送以缓解服务器压力
   let userOperations = []
   setInterval(() => {
-    io.emit('updateDot', userOperations)
-    userOperations = []
+    if(userOperations.length){
+      io.emit('updateDot', userOperations)
+      userOperations = []
+    }
   }, 500)
 
   app.use(express.static(path.join(__dirname, './static')))
