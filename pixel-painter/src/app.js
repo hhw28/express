@@ -2,6 +2,7 @@ const http = require('http')
 const fs = require('fs')
 const path = require('path')
 const ws = require('ws')
+const socketIo = require('socket.io')
 const express = require('express')
 const Jimp = require('jimp')
 
@@ -9,7 +10,7 @@ const port = 9095
 
 const app = express()
 const server = http.createServer(app)
-const wss = new ws.Server({server})
+const io = socketIo(server)
 
 const width = 500
 const height = 300
@@ -38,61 +39,48 @@ async function main() {
   }, 5000)
 
   // 当服务端和客户端连接成功
-  wss.on('connection', (ws, req) => {
+  io.on('connection', (ws, req) => {
     img.getBuffer(Jimp.MIME_PNG, (err, buf) => {
       if(err){
         console.log('get buffer err', err)
       }else{
-        ws.send(buf)
+        ws.emit('init' ,buf)
       }
     })
 
-    //在线人数
-    wss.clients.forEach(client => {
-      client.send(JSON.stringify({
-        type:'onlineCount',
-        count: wss.clients.size,
-      }))
+    // 在线人数
+    io.emit('onlineCount', {
+      count: Object.keys(io.sockets.sockets).length
     })
     ws.on('close', () => {
-      wss.clients.forEach(client => {
-        client.send(JSON.stringify({
-          type:'onlineCount',
-          count: wss.clients.size,
-        }))
+      io.emit('onlineCount', {
+        count: Object.keys(io.sockets.sockets).length
       })
     })
 
-
     // 当收到客户端消息时
     var lastDraw = 0
-    ws.on('message', msg => {
-      msg = JSON.parse(msg)
-      var {x, y, color} = msg
+    ws.on('drawDot', data => {
+      // data = JSON.parse(data)
+      var {x, y, color} = data
       var now = Date.now()
-
-      if(msg.type == 'drawDot'){
-        // 限制点击频率
-        if(now - lastDraw < 200){
-          return
-        }
-        if( x >= 0 && y >= 0 && x < width && y < height ){
-          lastDraw = now
-          lastUpdate = now
-          // 在图片上画上用户传来的像素点
-          img.setPixelColor(Jimp.cssColorToHex(color), x, y)
-          // 将改动广播给所有用户
-          wss.clients.forEach(client => {
-            client.send(
-              JSON.stringify({
-                type:'updateDot',
-                x, y, color,
-              })
-            )
-          })
-        }
+      // 限制点击频率
+      if(now - lastDraw < 200){
+        return
       }
+      if( x >= 0 && y >= 0 && x < width && y < height ){
+        lastDraw = now
+        lastUpdate = now
+        // 在图片上画上用户传来的像素点
+        img.setPixelColor(Jimp.cssColorToHex(color), x, y)
+        // 将改动广播给所有用户
+        io.emit('updateDot', {
+          x, y, color
+        })
+      }
+
     })
+
   })
 
   app.use(express.static(path.join(__dirname, './static')))
