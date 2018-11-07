@@ -54,7 +54,7 @@ async function main() {
     io.emit('onlineCount', {
       count: Object.keys(io.sockets.sockets).length
     })
-    ws.on('close', () => {
+    ws.on('disconnect', () => {
       io.emit('onlineCount', {
         count: Object.keys(io.sockets.sockets).length
       })
@@ -63,7 +63,6 @@ async function main() {
     // 当收到客户端消息时
     var lastDraw = 0
     ws.on('drawDot', data => {
-      // data = JSON.parse(data)
       var {x, y, color} = data
       var now = Date.now()
       // 限制点击频率

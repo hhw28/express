@@ -10,19 +10,43 @@
       margin: 0;
       padding: 0;
     }
-    #app{
-      padding-top: 10px;
-      padding-left: 10px;
-    }
     .canvas-wrapper{
-      border: 1px solid;
-      width: 500px;
-      height: 300px;
+      width: 100vw;
+      height: 100vh;
       position: relative;
       overflow: hidden;
+      background: rgba(0,0,0,.1);
+      display:flex;
+      justify-content:center;
+      align-items:center;
     }
-    .canvas-wrapper canvas{
-      position:absolute;
+    .canvas-wrapper>canvas{
+      position: relative;
+    }
+    .panels{
+      font-size: 20px;
+      position: fixed;
+      bottom:10px;
+      left: 50%;
+      transform:translate(-50%);
+      min-width:322px;
+    }
+    .panels>button{
+      border: none;
+      border-radius: 5px;
+      font-size: 15px;
+      color: inherit;
+      padding: 5px 10px;
+      margin-bottom: 12px;
+      background: #aaa;
+    }
+    .panels>span{
+      float: right;
+    }
+    .palette{
+      background: rgba(0,0,0,.6);
+      border-radius: 7px;
+      padding: 5px;
     }
     .palette-btn{
       display: inline-block;
@@ -30,7 +54,14 @@
       height: 20px;
       border-radius: 5px;
       cursor: pointer;
-      margin: 2px;
+      margin: 3px;
+      margin-bottom:-1px;
+    }
+    .palette-btn:hover{
+      transform: scale(1.2);
+    }
+    .active{
+      transform: scale(1.2);
     }
     input[type="radio"]{
       display: none;
@@ -42,13 +73,15 @@
     <div class="canvas-wrapper" @mousewheel="initZoom" >
       <canvas @mousedown="prepareDrag" ref="canvas" :width="width" :height="height" style="top:0px;left:0px"></canvas>
     </div>
-    <div>online:{{onlineCount}}</div>
-    <button @click="startPickingColor">{{isPickingColor ? '正在取色' : '取色'}}</button>
-    <input type="color" v-model="color">
-    <div class="palette">
-      <label class="palette-btn" :style="{background:c}" v-for="c in commonColors">
-        <input type="radio" :value="c" v-model="color">
-      </label>
+    <div class="panels">
+      <button @click="startPickingColor">{{isPickingColor ? '正在取色' : '取色'}}</button>
+      <!-- <input type="color" v-model="color"> -->
+      <span>online:{{onlineCount}}</span>
+      <div class="palette">
+        <label class="palette-btn" v-bind:class="c.checked ? 'active' : ''" @click="checkedColor(index)" :style="{background:c.value}" v-for="(c, index) in commonColors" :key="index">
+          <input type="radio" :value="c.value" v-model="color">
+        </label>
+      </div>
     </div>
   </div>
 </body>
@@ -61,17 +94,95 @@
       return {
         pixelData: [],
         commonColors: [
-          '#000000','#ffffff','#aaaaaa','#555555','#fed3c7','#ffc4ce','#faac8e','#ff8b83','#f44336','#e91e63','#e2669e','#9c27b0','#673ab7','#3f51b5','#004670','#057197','#2196f3','#00bcd4','#3be5db','#97fddc','#167300','#37a93c','#89e642','#d7ff07','#fff6d1','#f8cbbc','#ffeb3b','#ffc107','#ff9800','#ff5722','#B83f27','#795548'
+          {
+            value:'#000000',
+            checked: false,
+          },{
+            value:'#ffffff',
+            checked: false,
+          },{
+            value:'#fed3c7',
+            checked: false,
+          },{
+            value:'#ffc4ce',
+            checked: false,
+          },{
+            value:'#faac8e',
+            checked: false,
+          },{
+            value:'#ff8b83',
+            checked: false,
+          },{
+            value:'#f44336',
+            checked: false,
+          },{
+            value:'#e91e63',
+            checked: false,
+          },{
+            value:'#e2669e',
+            checked: false,
+          },{
+            value:'#9c27b0',
+            checked: false,
+          },{
+            value:'#673ab7',
+            checked: false,
+          },{
+            value:'#2196f3',
+            checked: false,
+          },{
+            value:'#00bcd4',
+            checked: false,
+          },{
+            value:'#3be5db',
+            checked: false,
+          },{
+            value:'#97fddc',
+            checked: false,
+          },{
+            value:'#167300',
+            checked: false,
+          },{
+            value:'#37a93c',
+            checked: false,
+          },{
+            value:'#89e642',
+            checked: false,
+          },{
+            value:'#d7ff07',
+            checked: false,
+          },{
+            value:'#fff6d1',
+            checked: false,
+          },{
+            value:'#f8cbbc',
+            checked: false,
+          },{
+            value:'#ffeb3b',
+            checked: false,
+          },{
+            value:'#ffc107',
+            checked: false,
+          },{
+            value:'#ff9800',
+            checked: false,
+          }
         ],
         color:'red',
-        width: 500,
-        height: 300,
+        width: document.documentElement.clientWidth,
+        height: document.documentElement.clientHeight,
         isPickingColor: false,
         factor: 1,
         onlineCount: 0,
       }
     },
     methods:{
+      checkedColor(index){
+        this.commonColors.forEach((item) => {
+          item.checked = false
+        })
+        this.commonColors[index].checked = true
+      },
       // 点击事件
       handleCanvasClick(e){
         if(this.isPickingColor){
@@ -125,8 +236,11 @@
         return '#' + dot[0] + dot[1] + dot[2]
       },
       getCurrHoverColor(e){
-        var x = e.offsetX
-        var y = e.offsetY
+        var clientX = e.clientX
+        var clientY = e.clientY
+        var rect = this.$refs.canvas.getBoundingClientRect()
+        var x = parseInt((clientX - rect.left) / this.factor)
+        var y = parseInt((clientY - rect.top) / this.factor)
         var p = this.ctx.getImageData(x, y, 1, 1).data
         var hexColor = this.rgba2hex(p)
         return hexColor
@@ -137,6 +251,14 @@
         this.isPickingColor = false
         this.$refs.canvas.removeEventListener('mousemove', this.updateCursor)
         this.$refs.canvas.style.cursor = ``
+
+        this.commonColors.forEach(item => {
+          if(this.color == item.value){
+            item.checked = true
+          }else{
+            item.checked = false
+          }
+        })
       },
       // 画像素点
       drawDot(e){
@@ -156,6 +278,7 @@
       },
       // 拖拽事件
       prepareDrag(e){
+
         var canvas = this.$refs.canvas
         var startX = e.clientX
         var startY = e.clientY
@@ -179,7 +302,7 @@
           var diffX = currX - startX
           var diffY = currY - startY
           // 当鼠标抬起的时候判断画布是否移动超过了一定的距离，若超过一定距离则判断其为moved状态，为拖拽行为不触发画点事件
-          if(Math.sqrt(diffX ** 2 + diffY**2) > 3){
+          if(Math.sqrt(diffX ** 2 + diffY ** 2) > 3){
             moved = true
           }
           canvas.removeEventListener('mousemove', moveHandler)
@@ -206,7 +329,7 @@
         if(this.factor < 1){
           this.factor = 1
         }
-        if(this.factor > 10){
+        if(this.factor > 30){
           this.factor = this.factor * 0.8
         }
         if(this.factor == 1){
@@ -214,17 +337,26 @@
           canvas.style.top = '0px'
         }
         canvas.style.transform = `scale(${this.factor})`
-      }
-
+      },
+      // autoSetPageScreen(canvas){
+      //   setPageScreen()
+      //   window.onresize = function(){
+      //     setPageScreen()
+      //   }
+      //   function setPageScreen(){
+      //     canvas.width = document.documentElement.clientWidth
+      //     canvas.height = document.documentElement.clientHeight
+      //   }
+      // },
     },
     mounted(){
-      // this.initZoom(e)
-
       var ws = io()
       this.ws = ws
 
       var canvas = this.$refs.canvas
       canvas.style.imageRendering = 'pixelated'  //解决图像点放大后模糊的情况
+
+      // this.autoSetPageScreen(canvas)
 
       var ctx = canvas.getContext('2d')
       this.ctx = ctx
@@ -237,7 +369,9 @@
         var image = new Image()
         image.src = tmpUrl
         image.onload = () => {
-          ctx.drawImage(image, 0, 0)
+          var x = parseInt((this.width-image.width)/2)
+          var y = parseInt((this.height-image.height)/2)
+          ctx.drawImage(image, x, y)
         }
       })
       ws.on('onlineCount', data => {
