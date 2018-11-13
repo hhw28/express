@@ -12,8 +12,8 @@ const app = express()
 const server = http.createServer(app)
 const io = socketIo(server)
 
-const width = 500
-const height = 300
+const width = 700
+const height = 600
 
 main()
 

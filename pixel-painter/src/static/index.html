@@ -169,8 +169,8 @@
           }
         ],
         color:'red',
-        width: document.documentElement.clientWidth,
-        height: document.documentElement.clientHeight,
+        width: 700,
+        height: 600,
         isPickingColor: false,
         factor: 1,
         onlineCount: 0,
@@ -338,16 +338,6 @@
         }
         canvas.style.transform = `scale(${this.factor})`
       },
-      // autoSetPageScreen(canvas){
-      //   setPageScreen()
-      //   window.onresize = function(){
-      //     setPageScreen()
-      //   }
-      //   function setPageScreen(){
-      //     canvas.width = document.documentElement.clientWidth
-      //     canvas.height = document.documentElement.clientHeight
-      //   }
-      // },
     },
     mounted(){
       var ws = io()
@@ -355,8 +345,6 @@
 
       var canvas = this.$refs.canvas
       canvas.style.imageRendering = 'pixelated'  //解决图像点放大后模糊的情况
-
-      // this.autoSetPageScreen(canvas)
 
       var ctx = canvas.getContext('2d')
       this.ctx = ctx
@@ -369,9 +357,7 @@
         var image = new Image()
         image.src = tmpUrl
         image.onload = () => {
-          var x = parseInt((this.width-image.width)/2)
-          var y = parseInt((this.height-image.height)/2)
-          ctx.drawImage(image, x, y)
+          ctx.drawImage(image, 0, 0)
         }
       })
       ws.on('onlineCount', data => {
